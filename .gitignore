@@ -18,6 +18,16 @@ cmd/gophermart/gophermart
 # Dependency directories (remove the comment below to include it)
 vendor/
 
+# db data
+db/data
+
+# swagger docs
+docs
+
+#mod
+go.mod
+go.sum
+
 # IDEs directories
 .idea
 .vscode
