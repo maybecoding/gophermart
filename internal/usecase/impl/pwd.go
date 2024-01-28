@@ -6,8 +6,7 @@ import (
 	"gophermart/internal/entity"
 )
 
-type PwdImpl struct {
-}
+type PwdImpl struct{}
 
 func NewPwd() *PwdImpl {
 	return &PwdImpl{}

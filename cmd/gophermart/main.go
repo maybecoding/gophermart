@@ -29,11 +29,21 @@ func main() {
 	}
 	defer pg.Close()
 
+	//f, err := os.ReadFile("/users/d.petukhov/papa/img.jpg")
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//bs64 := base64.StdEncoding.EncodeToString(f)
+	//fmt.Println(bs64)
+
 	// Инициализируем код приложения
 	ucAuth := usecase.NewAuth(repo.NewAuth(pg), impl.NewPwd(), impl.NewJwt(cfg.JWT))
-	uc := usecase.New(ucAuth)
+	ucOrder := usecase.NewOrder(repo.NewOrder(pg), impl.NewOrderNumAlgImpl())
+	uc := usecase.New(ucAuth, ucOrder)
 
 	r := gin.Default()
+	_ = r.SetTrustedProxies([]string{"127.0.0.1"})
 	http.NewRouter(r, uc)
 
 }

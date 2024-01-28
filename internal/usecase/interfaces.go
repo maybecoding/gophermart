@@ -9,6 +9,7 @@ type (
 	Auth interface {
 		Register(ctx context.Context, login entity.UserLogin, pwd entity.UserPassword) (entity.Token, error)
 		Login(ctx context.Context, login entity.UserLogin, pwd entity.UserPassword) (entity.Token, error)
+		ValidateToken(t entity.Token) (entity.TokenData, error)
 	}
 
 	AuthRepo interface {
@@ -23,5 +24,23 @@ type (
 	}
 	Jwt interface {
 		Get(jwt entity.TokenData) (entity.Token, error)
+		Use(t entity.Token) (entity.TokenData, error)
+	}
+)
+
+type (
+	Order interface {
+		Add(ctx context.Context, userID entity.UserID, number entity.OrderNumber) (*entity.Order, error)
+		GetByUser(ctx context.Context, userID entity.UserID) ([]entity.Order, error)
+	}
+
+	OrderRepo interface {
+		Add(ctx context.Context, order entity.Order) (*entity.Order, error)
+		Get(ctx context.Context, number entity.OrderNumber) (*entity.Order, error)
+		GetByUser(ctx context.Context, userID entity.UserID) ([]entity.Order, error)
+	}
+
+	OrderNumAlg interface {
+		Check(num entity.OrderNumber) (isCorrect bool, err error)
 	}
 )

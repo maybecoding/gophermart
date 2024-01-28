@@ -25,4 +25,5 @@ var (
 	ErrUserNotAvailable  = errors.New("login already taken")
 	ErrUserNotFound      = errors.New("user not found")
 	ErrIncorrectPassword = errors.New("password is incorrect")
+	ErrUnauthorized      = errors.New("authorization failed")
 )

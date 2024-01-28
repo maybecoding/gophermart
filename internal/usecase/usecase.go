@@ -1,11 +1,13 @@
 package usecase
 
 type UseCase struct {
-	Auth Auth
+	Auth  Auth
+	Order Order
 }
 
-func New(auth Auth) *UseCase {
+func New(auth Auth, order Order) *UseCase {
 	return &UseCase{
-		Auth: auth,
+		Auth:  auth,
+		Order: order,
 	}
 }

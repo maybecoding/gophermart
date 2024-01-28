@@ -16,7 +16,7 @@ import (
 // @contact.email  maybecoding@gmail.com
 
 // @host      localhost:8080
-// @BasePath  /api
+// @BasePath  /api/user
 
 // @securityDefinitions.basic  BasicAuth
 
@@ -25,11 +25,14 @@ import (
 
 // NewRouter - Создает новый роутер
 func NewRouter(r *gin.Engine, uc *usecase.UseCase) {
+	r.Use(JWTAuth(uc.Auth))
 
-	api := r.Group("/api")
+	user := r.Group("/api/user")
 	{
-		userRoutes(api, uc.Auth)
+		authRoutes(user, uc.Auth)
+		orderRoutes(user, uc.Order)
 	}
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	r.Run(":8080")
+	err := r.Run(":8080")
+	panic(err)
 }

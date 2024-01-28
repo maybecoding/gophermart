@@ -87,3 +87,11 @@ func (uc *AuthUseCase) Login(ctx context.Context, login entity.UserLogin, pwd en
 	}
 	return jwtToken, nil
 }
+
+func (uc *AuthUseCase) ValidateToken(t entity.Token) (entity.TokenData, error) {
+	td, err := uc.jwt.Use(t)
+	if err != nil {
+		return td, fmt.Errorf("AuthUseCase - ValidateToken - uc.jwt.Use: %v", err)
+	}
+	return td, nil
+}
