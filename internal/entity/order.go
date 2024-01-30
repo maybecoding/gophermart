@@ -6,16 +6,16 @@ import (
 )
 
 type (
-	OrderNumber  string
-	OrderStatus  string
-	OrderAccrual int
+	OrderNumber string
+	OrderStatus string
 
 	Order struct {
-		UserID     UserID
-		Number     OrderNumber
-		Status     OrderStatus
-		Accrual    OrderAccrual
-		UploadedAt time.Time
+		UserID             UserID
+		Number             OrderNumber
+		Status             OrderStatus
+		Accrual            BonusAmount
+		AccrualProcessedAt *time.Time
+		UploadedAt         time.Time
 	}
 )
 
@@ -30,5 +30,6 @@ var (
 	ErrOrderNotFound                 = errors.New("order not found")
 	ErrOrderNumberFormat             = errors.New("incorrect order number format")
 	ErrOrderNumberOwnedByAnotherUser = errors.New("order number is used by another user")
-	ErrOrderNumberAlreadyLoadeed     = errors.New("order number is already loaded")
+	ErrOrderNumberAlreadyLoaded      = errors.New("order number is already loaded")
+	ErrGracefulShutdown              = errors.New("graceful shutdown committed")
 )

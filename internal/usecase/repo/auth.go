@@ -27,8 +27,18 @@ func (ar *AuthRepo) LoginAvailable(ctx context.Context, login entity.UserLogin) 
 }
 func (ar *AuthRepo) UserNew(ctx context.Context, login entity.UserLogin, hash entity.UserPasswordHash) (*entity.User, error) {
 	usr := entity.User{}
-	query := `insert into usr(login, hash) values($1, $2) returning id, login, hash`
-	err := ar.Pool.QueryRow(ctx, query, login, hash).Scan(&usr.UserID, &usr.UserLogin, &usr.UserPasswordHash)
+	query := `with inserted_user as (
+    insert into usr(login, hash) values(@login, @hash) returning id, login, hash
+), _ as (
+    insert into user_bonus_balance(user_id, available, withdrawn)
+    select id, 0, 0 from inserted_user
+)
+select id, login, hash
+from inserted_user;`
+	err := ar.Pool.QueryRow(ctx, query, pgx.NamedArgs{
+		"login": login,
+		"hash":  hash,
+	}).Scan(&usr.UserID, &usr.UserLogin, &usr.UserPasswordHash)
 	if err != nil {
 		return nil, fmt.Errorf("AuthRepo - UserNew - ar.Pool.QueryRow: %w", err)
 	}

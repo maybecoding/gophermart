@@ -17,6 +17,11 @@ func New(uri string) (*Postgres, error) {
 	if err != nil {
 		return nil, fmt.Errorf("postgres - New - pgxpool.New: %w", err)
 	}
+
+	err = runMigrations(uri)
+	if err != nil {
+		return nil, fmt.Errorf("postgres - New - runMigrations: %w", err)
+	}
 	return pg, nil
 }
 func (p *Postgres) Close() {

@@ -64,7 +64,7 @@ func New() (cfg *Config, err error) {
 		pgURI = *fPgURI
 	}
 	if *fAccrualSystemAddress != "" {
-		accrualSystemAddress = *fHttpAddress
+		accrualSystemAddress = *fAccrualSystemAddress
 	}
 	if *fLogLevel != "" {
 		logLevel = *fLogLevel

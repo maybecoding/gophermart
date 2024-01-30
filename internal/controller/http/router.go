@@ -23,16 +23,16 @@ import (
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
 
-// NewRouter - Создает новый роутер
-func NewRouter(r *gin.Engine, uc *usecase.UseCase) {
+// newRouter - Создает новый роутер
+func newRouter(r *gin.Engine, uc *usecase.UseCase) *gin.Engine {
 	r.Use(JWTAuth(uc.Auth))
 
 	user := r.Group("/api/user")
 	{
 		authRoutes(user, uc.Auth)
 		orderRoutes(user, uc.Order)
+		bonusRoutes(user, uc.Bonus)
 	}
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	err := r.Run(":8080")
-	panic(err)
+	return r
 }

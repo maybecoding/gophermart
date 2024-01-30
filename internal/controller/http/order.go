@@ -2,7 +2,6 @@ package http
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"gophermart/internal/entity"
 	"gophermart/internal/usecase"
@@ -22,15 +21,16 @@ func orderRoutes(r *gin.RouterGroup, uc usecase.Order) {
 	{
 		r.POST("orders", orr.OrderAdd)
 		r.GET("orders", orr.GetOrders)
+		r.POST("balance/withdraw", orr.AddForBonuses)
 	}
 }
 
 type respOrder struct {
-	UserID     entity.UserID       `json:"-"`
-	Number     entity.OrderNumber  `json:"number"`
-	Status     entity.OrderStatus  `json:"status"`
-	Accrual    entity.OrderAccrual `json:"accrual,omitempty"`
-	UploadedAt string              `json:"uploaded_at"`
+	UserID     entity.UserID      `json:"-"`
+	Number     entity.OrderNumber `json:"number"`
+	Status     entity.OrderStatus `json:"status"`
+	Accrual    entity.BonusAmount `json:"accrual,omitempty"`
+	UploadedAt string             `json:"uploaded_at"`
 }
 
 // OrderAdd godoc
@@ -51,7 +51,6 @@ type respOrder struct {
 // @Security     JWT
 // @SecurityDefinitions JWT
 func (u *OrderRoutes) OrderAdd(c *gin.Context) {
-	fmt.Println("hi")
 	b, err := io.ReadAll(c.Request.Body)
 	defer func() {
 		_ = c.Request.Body.Close()
@@ -72,8 +71,8 @@ func (u *OrderRoutes) OrderAdd(c *gin.Context) {
 	if !ok {
 		return
 	}
-	order, err := u.uc.Add(c, userID, number)
-	if err == nil || err != nil && errors.Is(err, entity.ErrOrderNumberAlreadyLoadeed) {
+	order, err := u.uc.AddNew(c, userID, number)
+	if err == nil || err != nil && errors.Is(err, entity.ErrOrderNumberAlreadyLoaded) {
 		code := http.StatusAccepted
 		if err != nil {
 			code = http.StatusOK
@@ -141,4 +140,55 @@ func (u *OrderRoutes) GetOrders(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, res)
+}
+
+type reqWithdraw struct {
+	Order  entity.OrderNumber `json:"order"`
+	Amount entity.BonusAmount `json:"sum"`
+}
+
+// AddForBonuses godoc
+// @Summary      Withdraw bonuses for order payment
+// @Description  Decreases bonuses by order amount
+// @Tags         order
+// @Accept       text/plain
+// @Produce      json
+// @Param        request	body  reqWithdraw	true	"order and withdraw amount"
+// @Success      200 "No Content"
+// @Failure      401  "No Content"
+// @Failure      402  {object}  response
+// @Failure      422  {object}  response
+// @Failure      500  {object}  response
+// @Router       /balance/withdraw [post]
+// @Security     JWT
+// @SecurityDefinitions JWT
+func (u *OrderRoutes) AddForBonuses(c *gin.Context) {
+	userID, ok := getUser(c)
+	if !ok {
+		return
+	}
+
+	req := reqWithdraw{}
+	err := c.ShouldBindJSON(&req)
+
+	if err != nil {
+		logger.Error().Err(err).Msg("http - OrderRoutes - AddForBonus - c.ShouldBindJSON")
+		errorResponse(c, err, http.StatusBadRequest)
+		return
+	}
+
+	_, err = u.uc.AddForBonuses(c, userID, req.Order, req.Amount)
+	if err != nil {
+		logger.Error().Err(err).Msg("http - OrderRoutes - AddForBonus - u.uc.Withdraw")
+		errCode := http.StatusInternalServerError
+		if errors.Is(err, entity.ErrBonusNotEnough) {
+			errCode = http.StatusPaymentRequired
+		} else if errors.Is(err, entity.ErrOrderNumberFormat) {
+			errCode = http.StatusUnprocessableEntity
+		}
+		errorResponse(c, err, errCode)
+		return
+	}
+
+	c.Status(http.StatusOK)
 }

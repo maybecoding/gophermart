@@ -30,17 +30,35 @@ type (
 
 type (
 	Order interface {
-		Add(ctx context.Context, userID entity.UserID, number entity.OrderNumber) (*entity.Order, error)
+		AddNew(ctx context.Context, userID entity.UserID, number entity.OrderNumber) (*entity.Order, error)
+		AddForBonuses(ctx context.Context, userID entity.UserID, number entity.OrderNumber, amount entity.BonusAmount) (*entity.Order, error)
 		GetByUser(ctx context.Context, userID entity.UserID) ([]entity.Order, error)
+		RunAccrualRefresh(ctx context.Context)
 	}
 
 	OrderRepo interface {
 		Add(ctx context.Context, order entity.Order) (*entity.Order, error)
 		Get(ctx context.Context, number entity.OrderNumber) (*entity.Order, error)
 		GetByUser(ctx context.Context, userID entity.UserID) ([]entity.Order, error)
+		GetUnAccrued(ctx context.Context) ([]entity.Order, error)
+		Accrual(ctx context.Context, accrual entity.AccrualInfo) (*entity.Order, error)
 	}
 
 	OrderNumAlg interface {
 		Check(num entity.OrderNumber) (isCorrect bool, err error)
+	}
+	OrderAccrual interface {
+		GetStatus(orderNum entity.OrderNumber) (*entity.AccrualInfo, error)
+	}
+)
+
+type (
+	Bonus interface {
+		GetBalance(ctx context.Context, userID entity.UserID) (*entity.BonusBalance, error)
+		GetWithdrawals(ctx context.Context, userID entity.UserID) ([]entity.BonusWithdraw, error)
+	}
+	BonusRepo interface {
+		GetBalance(ctx context.Context, userID entity.UserID) (*entity.BonusBalance, error)
+		GetWithdrawals(ctx context.Context, userID entity.UserID) ([]entity.BonusWithdraw, error)
 	}
 )
