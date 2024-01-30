@@ -24,8 +24,6 @@ db/data
 # swagger docs
 docs
 
-#mod
-go.sum
 
 # IDEs directories
 .idea
