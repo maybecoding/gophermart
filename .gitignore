@@ -25,7 +25,6 @@ db/data
 docs
 
 #mod
-go.mod
 go.sum
 
 # IDEs directories
