@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gophermart/internal/entity"
+	"gophermart/pkg/logger"
 )
 
 type BonusUseCase struct {
@@ -19,6 +20,7 @@ func (uc *BonusUseCase) GetBalance(ctx context.Context, userID entity.UserID) (*
 	if err != nil {
 		return nil, fmt.Errorf("BonusUseCase - BonusUseCase - uc.repo.GetBalance: %w", err)
 	}
+	logger.Debug().Interface("balance", balance).Msg("BonusUseCase - GetBalance")
 	return balance, err
 }
 
@@ -27,5 +29,6 @@ func (uc *BonusUseCase) GetWithdrawals(ctx context.Context, userID entity.UserID
 	if err != nil {
 		return nil, fmt.Errorf("BonusUseCase - GetWithdrawals - uc.repo.GetWithdrawals: %w", err)
 	}
+	logger.Debug().Interface("withdrawals", withdrawals).Msg("BonusUseCase - GetWithdrawals")
 	return withdrawals, err
 }

@@ -87,7 +87,9 @@ func (uc *OrderUseCase) AddForBonuses(ctx context.Context, userID entity.UserID,
 		AccrualProcessedAt: &accrualAt,
 		UploadedAt:         time.Now(),
 	}
-	return uc.add(ctx, o)
+	order, err := uc.add(ctx, o)
+	logger.Debug().Interface("order", order).Msg("OrderUseCase - AddForBonuses - return")
+	return order, err
 }
 
 func (uc *OrderUseCase) GetByUser(ctx context.Context, userID entity.UserID) ([]entity.Order, error) {
