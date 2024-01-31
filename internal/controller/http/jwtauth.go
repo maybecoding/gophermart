@@ -11,6 +11,11 @@ import (
 func JWTAuth(uc usecase.Auth) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authCookie, err := c.Cookie("Authorization")
+		if err != nil {
+			logger.Error().Err(err).Msg("http - JWTAuth - c.Cookie")
+			c.Next()
+			return
+		}
 		logger.Debug().Str("Authorization", authCookie).Msg("http - JWTAuth - c.Cookie")
 		auth := strings.Split(authCookie, " ")
 		if len(auth) != 2 || auth[0] != "Bearer" {

@@ -25,7 +25,7 @@ type resAccrualInfo struct {
 }
 
 func (oa *OrderAccrual) GetStatus(orderNum entity.OrderNumber) (*entity.AccrualInfo, error) {
-	endpoint := fmt.Sprintf("http://%s/api/orders/%s", oa.cfg.Address, orderNum)
+	endpoint := fmt.Sprintf("%s/api/orders/%s", oa.cfg.Address, orderNum)
 	logger.Debug().Str("endpoint", endpoint).Msg("trying to get accrual")
 	resp, err := http.Get(endpoint)
 	if err != nil {

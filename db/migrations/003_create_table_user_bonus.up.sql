@@ -23,8 +23,8 @@
 drop table if exists user_bonus_balance;
 create table user_bonus_balance (
     user_id int references usr(id),
-    available int not null default 0,
-    withdrawn int not null default 0,
+    available float8 not null default 0,
+    withdrawn float8 not null default 0,
     constraint current_positive check (available >= 0),
     constraint withdraw_not_negative check(withdrawn >= 0)
 );

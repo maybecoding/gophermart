@@ -104,7 +104,7 @@ func (uc *OrderUseCase) RunAccrualRefresh(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(1 * time.Second):
+		case <-time.After(20 * time.Second):
 			uc.accrualRefreshAll(ctx)
 		}
 	}
@@ -122,7 +122,7 @@ func (uc *OrderUseCase) accrualRefreshAll(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(10 * time.Millisecond):
+		case <-time.After(1 * time.Millisecond):
 			uc.accrualRefresh(ctx, order)
 		}
 	}

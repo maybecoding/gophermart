@@ -39,13 +39,13 @@ func New() (cfg *Config, err error) {
 		}
 	}()
 
-	fHttpAddress := flag.String("a", "localhost:8080", "HTTP server address")
+	fHTTPAddress := flag.String("a", "localhost:8080", "HTTP server address")
 	httpAddress := os.Getenv("RUN_ADDRESS")
 
 	fPgURI := flag.String("d", "postgres://api:pwd@localhost:5432/mart?sslmode=disable", "Postgres database URI")
 	pgURI := os.Getenv("DATABASE_URI")
 
-	fAccrualSystemAddress := flag.String("r", "localhost:8090", "Accrual system address")
+	fAccrualSystemAddress := flag.String("r", "http://localhost:8090", "Accrual system address")
 	accrualSystemAddress := os.Getenv("ACCRUAL_SYSTEM_ADDRESS")
 
 	fLogLevel := flag.String("l", "debug", "Log level")
@@ -57,16 +57,16 @@ func New() (cfg *Config, err error) {
 		return nil, fmt.Errorf("error due flag.Parse (extra arguments are passed) :%w", err)
 	}
 
-	if *fHttpAddress != "" {
-		httpAddress = *fHttpAddress
+	if httpAddress == "" {
+		httpAddress = *fHTTPAddress
 	}
-	if *fPgURI != "" {
+	if pgURI == "" {
 		pgURI = *fPgURI
 	}
-	if *fAccrualSystemAddress != "" {
+	if accrualSystemAddress == "" {
 		accrualSystemAddress = *fAccrualSystemAddress
 	}
-	if *fLogLevel != "" {
+	if logLevel == "" {
 		logLevel = *fLogLevel
 	}
 	return &Config{

@@ -6,6 +6,6 @@ create table user_order (
                             user_id int references usr(id),
                             number varchar(255) unique not null,
                             status order_status not null,
-                            accrual int default 0,
+                            accrual float8 default 0,
                             created_at date not null default now()
 );

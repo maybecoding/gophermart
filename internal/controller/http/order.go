@@ -30,7 +30,7 @@ type respOrder struct {
 	Number     entity.OrderNumber `json:"number"`
 	Status     entity.OrderStatus `json:"status"`
 	Accrual    entity.BonusAmount `json:"accrual,omitempty"`
-	UploadedAt string             `json:"uploaded_at"`
+	UploadedAt string             `json:"uploaded_at,omitempty"`
 }
 
 // OrderAdd godoc
@@ -72,19 +72,20 @@ func (u *OrderRoutes) OrderAdd(c *gin.Context) {
 		return
 	}
 	order, err := u.uc.AddNew(c, userID, number)
-	if err == nil || err != nil && errors.Is(err, entity.ErrOrderNumberAlreadyLoaded) {
-		code := http.StatusAccepted
-		if err != nil {
-			code = http.StatusOK
-		}
-
+	if err == nil {
 		resp := respOrder{
 			Number:     order.Number,
 			Status:     order.Status,
 			Accrual:    order.Accrual,
 			UploadedAt: order.UploadedAt.Format(time.RFC3339),
 		}
-		c.JSON(code, resp)
+		c.JSON(http.StatusAccepted, resp)
+		return
+	}
+	logger.Error().Err(err).Msg("http - OrderRoutes - OrderAdd - u.uc.AddNew")
+
+	if errors.Is(err, entity.ErrOrderNumberAlreadyLoaded) {
+		c.Status(http.StatusOK)
 		return
 	}
 
@@ -96,7 +97,6 @@ func (u *OrderRoutes) OrderAdd(c *gin.Context) {
 	}
 	logger.Error().Err(err).Int("error code", errCode).Msg("http - OrderRoutes - OrderAdd - u.uc.Add")
 	errorResponse(c, err, errCode)
-	return
 }
 
 type respOrderList []respOrder

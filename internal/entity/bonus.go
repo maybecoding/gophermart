@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type BonusAmount int32
+type BonusAmount float32
 
 type BonusBalance struct {
 	Available BonusAmount

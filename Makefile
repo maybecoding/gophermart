@@ -24,8 +24,7 @@ pg-reset:
 
 .PHONY: build
 build:
-	go build -o cmd/server/server ./cmd/server/*.go
-	go build -o cmd/agent/agent ./cmd/agent/*.go
+	go build -o cmd/gophermart ./cmd/gophermart
 
 
 .PHONY: mg-create
@@ -58,3 +57,17 @@ mg-down:
 	  -path=/migrations \
 	  -database $(DB_URL) \
 	  down -all
+
+
+.PHONY: ya-test
+ya-test:
+	gophermarttest \
+	  -test.v -test.run=^TestGophermart$ \
+	  -gophermart-binary-path=cmd/gophermart/gophermart \
+	  -gophermart-host=localhost \
+	  -gophermart-port=8080 \
+	  -gophermart-database-uri="postgres://api:pwd@localhost:5432/mart?sslmode=disable" \
+	  -accrual-binary-path=cmd/accrual/accrual_darwin_amd64 \
+	  -accrual-host=localhost \
+	  -accrual-port=$(random unused-port) \
+	  -accrual-database-uri="postgres://api:pwd@localhost:5432/mart?sslmode=disable"

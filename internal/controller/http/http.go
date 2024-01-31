@@ -9,15 +9,15 @@ import (
 	"net/http"
 )
 
-type Http struct {
+type HTTP struct {
 	server *http.Server
 }
 
-func New() *Http {
-	return &Http{}
+func New() *HTTP {
+	return &HTTP{}
 }
 
-func (h *Http) Run(uc *usecase.UseCase, cfg config.HTTP) error {
+func (h *HTTP) Run(uc *usecase.UseCase, cfg config.HTTP) error {
 	r := newRouter(gin.Default(), uc)
 	h.server = &http.Server{
 		Addr:    cfg.Address,
@@ -27,7 +27,7 @@ func (h *Http) Run(uc *usecase.UseCase, cfg config.HTTP) error {
 	return fmt.Errorf("http - Run - http.ListenAndServe: %w", h.server.ListenAndServe())
 }
 
-func (h *Http) Shutdown(ctx context.Context) error {
+func (h *HTTP) Shutdown(ctx context.Context) error {
 	<-ctx.Done()
 	return h.server.Shutdown(ctx)
 }
