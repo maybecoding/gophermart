@@ -22,7 +22,7 @@ vendor/
 db/data
 
 # swagger docs
-docs
+#docs
 
 
 # IDEs directories
