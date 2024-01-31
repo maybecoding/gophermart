@@ -31,7 +31,7 @@ func (br *BonusRepo) GetBalance(ctx context.Context, userID entity.UserID) (*ent
 	return &balance, nil
 }
 func (br *BonusRepo) GetWithdrawals(ctx context.Context, userID entity.UserID) ([]entity.BonusWithdraw, error) {
-	query := `select number, -accrual, accrual_at
+	query := `select -accrual, number, accrual_at
 from user_order
 where user_id = @user_id
     and accrual < 0
