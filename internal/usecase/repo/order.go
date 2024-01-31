@@ -40,6 +40,7 @@ func (orr *OrderRepo) Add(ctx context.Context, order entity.Order) (*entity.Orde
         returning user_id, number, status, accrual, accrual_at, created_at
 ), _ as (
     update user_bonus_balance as bal set available = available + us_or.accrual
+	,withdrawn = withdrawn + case when accrual < 0 then -accrual else 0 end
         from us_or
         where us_or.user_id = bal.user_id
 )
