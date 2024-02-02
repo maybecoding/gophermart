@@ -35,6 +35,9 @@ func (orr *OrderRepo) Add(ctx context.Context, order entity.Order) error {
 	tx, err := orr.Pool.BeginTx(ctx, pgx.TxOptions{
 		IsoLevel: pgx.RepeatableRead,
 	})
+	if err != nil {
+		return fmt.Errorf("OrderRepo - Add - orr.Pool.BeginTx: %w", err)
+	}
 	defer func() {
 		_ = tx.Rollback(ctx)
 	}()
@@ -106,6 +109,9 @@ func (orr *OrderRepo) Accrual(ctx context.Context, accrual entity.AccrualInfo) e
 	tx, err := orr.Pool.BeginTx(ctx, pgx.TxOptions{
 		IsoLevel: pgx.RepeatableRead,
 	})
+	if err != nil {
+		return fmt.Errorf("OrderRepo - Accrual - orr.Pool.BeginTx: %w", err)
+	}
 	defer func() {
 		_ = tx.Rollback(ctx)
 	}()

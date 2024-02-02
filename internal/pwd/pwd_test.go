@@ -1,4 +1,4 @@
-package impl
+package pwd
 
 import (
 	"github.com/stretchr/testify/require"
@@ -28,7 +28,7 @@ func TestPwdImpl(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ah := &PwdImpl{}
+			ah := &Pwd{}
 			gotHash, err := ah.Hash(tt.args.pwd)
 			require.NoError(t, err)
 			require.NotEqual(t, gotHash, "")

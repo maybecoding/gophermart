@@ -5,14 +5,16 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/errgroup"
+	"gophermart/internal/accrual"
 	"gophermart/internal/config"
 	"gophermart/internal/controller/http"
 	"gophermart/internal/entity"
+	"gophermart/internal/jwt"
 	"gophermart/internal/migration"
+	"gophermart/internal/numalg"
+	"gophermart/internal/pwd"
+	repo2 "gophermart/internal/repo"
 	"gophermart/internal/usecase"
-	"gophermart/internal/usecase/accrual"
-	"gophermart/internal/usecase/impl"
-	"gophermart/internal/usecase/repo"
 	"gophermart/pkg/logger"
 	"gophermart/pkg/postgres"
 	nethttp "net/http"
@@ -33,7 +35,7 @@ func main() {
 	// Подключаемся к БД
 	pg, err := postgres.New(cfg.PG.URI)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("main - postgres.NewJwt")
+		logger.Fatal().Err(err).Msg("main - postgres.New")
 	}
 	defer pg.Close()
 
@@ -44,9 +46,9 @@ func main() {
 	}
 
 	// Инициализируем код приложения
-	ucAuth := usecase.NewAuth(repo.NewAuth(pg), impl.NewPwd(), impl.NewJwt(cfg.JWT))
-	repoBonus := repo.NewBonus(pg)
-	ucOrder := usecase.NewOrder(repo.NewOrder(pg), repoBonus, impl.NewOrderNumAlgImpl(), accrual.NewOrder(cfg.AccrualSystem))
+	ucAuth := usecase.NewAuth(repo2.NewAuth(pg), pwd.New(), jwt.New(cfg.JWT))
+	repoBonus := repo2.NewBonus(pg)
+	ucOrder := usecase.NewOrder(repo2.NewOrder(pg), repoBonus, numalg.New(), accrual.NewOrder(cfg.AccrualSystem))
 	ucBonus := usecase.NewBonus(repoBonus)
 	uc := usecase.New(ucAuth, ucOrder, ucBonus)
 

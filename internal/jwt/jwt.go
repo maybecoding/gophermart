@@ -1,4 +1,4 @@
-package impl
+package jwt
 
 import (
 	"errors"
@@ -9,13 +9,13 @@ import (
 	"time"
 )
 
-type JwtImpl struct {
+type Jwt struct {
 	jwtSecret       string
 	jwtExpiresHours int
 }
 
-func NewJwt(cfg config.JWT) *JwtImpl {
-	return &JwtImpl{
+func New(cfg config.JWT) *Jwt {
+	return &Jwt{
 		jwtSecret:       cfg.Secret,
 		jwtExpiresHours: cfg.ExpiresHours,
 	}
@@ -26,7 +26,7 @@ type claims struct {
 	UserID entity.UserID
 }
 
-func (ah *JwtImpl) Get(j entity.TokenData) (entity.Token, error) {
+func (ah *Jwt) Get(j entity.TokenData) (entity.Token, error) {
 	c := claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(ah.jwtExpiresHours))),
@@ -42,7 +42,7 @@ func (ah *JwtImpl) Get(j entity.TokenData) (entity.Token, error) {
 	return entity.Token(tokenStr), nil
 }
 
-func (ah *JwtImpl) Use(t entity.Token) (entity.TokenData, error) {
+func (ah *Jwt) Use(t entity.Token) (entity.TokenData, error) {
 	td := entity.TokenData{}
 	c := &claims{}
 	token, err := jwt.ParseWithClaims(string(t), c, func(token *jwt.Token) (interface{}, error) {
@@ -52,11 +52,11 @@ func (ah *JwtImpl) Use(t entity.Token) (entity.TokenData, error) {
 		return []byte(ah.jwtSecret), nil
 	})
 	if err != nil {
-		return td, fmt.Errorf("JwtImpl - Use - jwt.Parse: %w", err)
+		return td, fmt.Errorf("Jwt - Use - jwt.Parse: %w", err)
 	}
 
 	if !token.Valid {
-		return td, errors.New("JwtImpl - Use - token is not valid")
+		return td, errors.New("Jwt - Use - token is not valid")
 	}
 	td.UserID = c.UserID
 	return td, nil
