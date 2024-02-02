@@ -30,7 +30,7 @@ func (ar *AuthRepo) UserNew(ctx context.Context, login entity.UserLogin, hash en
 	query := `with inserted_user as (
     insert into usr(login, hash) values(@login, @hash) returning id, login, hash
 ), _ as (
-    insert into user_bonus_balance(user_id, available, withdrawn)
+    insert into balance(user_id, available, withdrawn)
     select id, 0, 0 from inserted_user
 )
 select id, login, hash

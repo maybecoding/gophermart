@@ -20,7 +20,7 @@ func NewBonus(pg *postgres.Postgres) *BonusRepo {
 //
 
 func (br *BonusRepo) GetBalance(ctx context.Context, userID entity.UserID) (*entity.BonusBalance, error) {
-	query := `select available, withdrawn from user_bonus_balance where user_id = @user_id`
+	query := `select available, withdrawn from balance where user_id = @user_id`
 	balance := entity.BonusBalance{}
 	err := br.Pool.QueryRow(ctx, query, pgx.NamedArgs{
 		"user_id": userID,
@@ -31,8 +31,8 @@ func (br *BonusRepo) GetBalance(ctx context.Context, userID entity.UserID) (*ent
 	return &balance, nil
 }
 func (br *BonusRepo) GetWithdrawals(ctx context.Context, userID entity.UserID) ([]entity.BonusWithdraw, error) {
-	query := `select -accrual, number, accrual_at
-from user_order
+	query := `select -accrual, order_nr, accrual_at
+from "order"
 where user_id = @user_id
     and accrual < 0
     and accrual_at is not null;`

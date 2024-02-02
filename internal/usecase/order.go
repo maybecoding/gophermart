@@ -25,39 +25,40 @@ func NewOrder(repo OrderRepo, repoBonus BonusRepo, numAlg OrderNumAlg, accrual O
 	}
 }
 
-func (uc *OrderUseCase) add(ctx context.Context, order entity.Order) (*entity.Order, error) {
+func (uc *OrderUseCase) add(ctx context.Context, order entity.Order) error {
+	logger.Debug().Interface("order", order).Msg("OrderUseCase - add")
 	// Проверяем, что номер заказа допустим
 	ok, err := uc.numAlg.Check(order.Number)
 	if err != nil {
-		return nil, fmt.Errorf("OrderUseCase - Add - uc.numAlg.Check: %w", err)
+		return fmt.Errorf("OrderUseCase - Add - uc.numAlg.Check: %w", err)
 	}
 	if !ok {
-		return nil, entity.ErrOrderNumberFormat
+		return entity.ErrOrderNumberFormat
 	}
 	// Получаем заказ если он уже есть
 	existsOrder, err := uc.repo.Get(ctx, order.Number)
 	if err != nil {
 		if !errors.Is(err, entity.ErrOrderNotFound) {
-			return nil, fmt.Errorf("OrderUseCase - Add - uc.repo.Get: %w", err)
+			return fmt.Errorf("OrderUseCase - Add - uc.repo.Get: %w", err)
 		}
 	} else {
 		if existsOrder.UserID != order.UserID {
-			return nil, entity.ErrOrderNumberOwnedByAnotherUser
+			return entity.ErrOrderNumberOwnedByAnotherUser
 		}
 		if existsOrder.UserID == order.UserID {
-			return nil, entity.ErrOrderNumberAlreadyLoaded
+			return entity.ErrOrderNumberAlreadyLoaded
 		}
 	}
 	// Добавляем новый номер заказа
-	outO, err := uc.repo.Add(ctx, order)
+	err = uc.repo.Add(ctx, order)
 	if err != nil {
-		return nil, fmt.Errorf("OrderUseCase - Add - uc.repo.Add: %w", err)
+		return fmt.Errorf("OrderUseCase - Add - uc.repo.Add: %w", err)
 	}
 
-	return outO, nil
+	return nil
 }
 
-func (uc *OrderUseCase) AddNew(ctx context.Context, userID entity.UserID, number entity.OrderNumber) (*entity.Order, error) {
+func (uc *OrderUseCase) AddNew(ctx context.Context, userID entity.UserID, number entity.OrderNumber) error {
 
 	o := entity.Order{
 		UserID:     userID,
@@ -69,15 +70,15 @@ func (uc *OrderUseCase) AddNew(ctx context.Context, userID entity.UserID, number
 	return uc.add(ctx, o)
 }
 
-func (uc *OrderUseCase) AddForBonuses(ctx context.Context, userID entity.UserID, number entity.OrderNumber, amount entity.BonusAmount) (*entity.Order, error) {
+func (uc *OrderUseCase) AddForBonuses(ctx context.Context, userID entity.UserID, number entity.OrderNumber, amount entity.BonusAmount) error {
 	accrualAt := time.Now()
 	// Проверяем баланс
 	balance, err := uc.repoBonus.GetBalance(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("OrderUseCase - AddForBonuses - uc.repoBonus.GetBalance: %w", err)
+		return fmt.Errorf("OrderUseCase - AddForBonuses - uc.repoBonus.GetBalance: %w", err)
 	}
 	if balance.Available < amount {
-		return nil, entity.ErrBonusNotEnough
+		return entity.ErrBonusNotEnough
 	}
 	o := entity.Order{
 		UserID:             userID,
@@ -87,9 +88,8 @@ func (uc *OrderUseCase) AddForBonuses(ctx context.Context, userID entity.UserID,
 		AccrualProcessedAt: &accrualAt,
 		UploadedAt:         time.Now(),
 	}
-	order, err := uc.add(ctx, o)
-	logger.Debug().Interface("order", order).Msg("OrderUseCase - AddForBonuses - return")
-	return order, err
+	err = uc.add(ctx, o)
+	return err
 }
 
 func (uc *OrderUseCase) GetByUser(ctx context.Context, userID entity.UserID) ([]entity.Order, error) {
@@ -140,7 +140,7 @@ func (uc *OrderUseCase) accrualRefresh(ctx context.Context, order entity.Order) 
 		logger.Debug().Interface("order", order).Msg("status is same - return")
 		return
 	}
-	_, err = uc.repo.Accrual(ctx, *accInf)
+	err = uc.repo.Accrual(ctx, *accInf)
 	if err != nil {
 		logger.Error().Err(err).Msg("OrderUseCase - accrualRefresh - uc.repo.Accrual")
 		return

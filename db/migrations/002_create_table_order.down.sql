@@ -1,2 +1,2 @@
-drop table if exists user_order;
+drop table if exists "order";
 drop type if exists order_status;

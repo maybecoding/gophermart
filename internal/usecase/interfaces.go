@@ -30,18 +30,18 @@ type (
 
 type (
 	Order interface {
-		AddNew(ctx context.Context, userID entity.UserID, number entity.OrderNumber) (*entity.Order, error)
-		AddForBonuses(ctx context.Context, userID entity.UserID, number entity.OrderNumber, amount entity.BonusAmount) (*entity.Order, error)
+		AddNew(ctx context.Context, userID entity.UserID, number entity.OrderNumber) error
+		AddForBonuses(ctx context.Context, userID entity.UserID, number entity.OrderNumber, amount entity.BonusAmount) error
 		GetByUser(ctx context.Context, userID entity.UserID) ([]entity.Order, error)
 		RunAccrualRefresh(ctx context.Context)
 	}
 
 	OrderRepo interface {
-		Add(ctx context.Context, order entity.Order) (*entity.Order, error)
+		Add(ctx context.Context, order entity.Order) error
 		Get(ctx context.Context, number entity.OrderNumber) (*entity.Order, error)
 		GetByUser(ctx context.Context, userID entity.UserID) ([]entity.Order, error)
 		GetUnAccrued(ctx context.Context) ([]entity.Order, error)
-		Accrual(ctx context.Context, accrual entity.AccrualInfo) (*entity.Order, error)
+		Accrual(ctx context.Context, accrual entity.AccrualInfo) error
 	}
 
 	OrderNumAlg interface {

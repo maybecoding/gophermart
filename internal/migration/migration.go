@@ -1,4 +1,4 @@
-package postgres
+package migration
 
 import (
 	"database/sql"
@@ -10,7 +10,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-func runMigrations(dsn string) error {
+func Run(dsn string) error {
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		return fmt.Errorf("failed to connect to db for run migrations: %w", err)

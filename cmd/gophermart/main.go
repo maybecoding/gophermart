@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/errgroup"
 	"gophermart/internal/config"
 	"gophermart/internal/controller/http"
 	"gophermart/internal/entity"
+	"gophermart/internal/migration"
 	"gophermart/internal/usecase"
 	"gophermart/internal/usecase/accrual"
 	"gophermart/internal/usecase/impl"
@@ -33,9 +33,15 @@ func main() {
 	// Подключаемся к БД
 	pg, err := postgres.New(cfg.PG.URI)
 	if err != nil {
-		logger.Fatal().Err(fmt.Errorf("main - postgres.NewJwt: %w", err)).Msg("error")
+		logger.Fatal().Err(err).Msg("main - postgres.NewJwt")
 	}
 	defer pg.Close()
+
+	// Выполняем миграции
+	err = migration.Run(cfg.PG.URI)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("main - migration.Run")
+	}
 
 	// Инициализируем код приложения
 	ucAuth := usecase.NewAuth(repo.NewAuth(pg), impl.NewPwd(), impl.NewJwt(cfg.JWT))
@@ -58,6 +64,7 @@ func main() {
 		return entity.ErrGracefulShutdown
 	})
 	h := http.New()
+
 	// Запускаем сервер
 	g.Go(func() error {
 		err := h.Run(uc, cfg.HTTP)

@@ -25,14 +25,6 @@ func orderRoutes(r *gin.RouterGroup, uc usecase.Order) {
 	}
 }
 
-type respOrder struct {
-	UserID     entity.UserID      `json:"-"`
-	Number     entity.OrderNumber `json:"number"`
-	Status     entity.OrderStatus `json:"status"`
-	Accrual    entity.BonusAmount `json:"accrual,omitempty"`
-	UploadedAt string             `json:"uploaded_at,omitempty"`
-}
-
 // OrderAdd godoc
 // @Summary      Order Create
 // @Description  Creates New Order
@@ -40,8 +32,8 @@ type respOrder struct {
 // @Accept       text/plain
 // @Produce      json
 // @Param        request	body	string	true	"order ID"
-// @Success      200   {object} respOrder
-// @Success      202   {object} respOrder
+// @Success      200   "No Content"
+// @Success      202   "No Content"
 // @Failure      400   {object}  response
 // @Failure      401   "No Content"
 // @Failure      409   {object}  response
@@ -71,15 +63,9 @@ func (u *OrderRoutes) OrderAdd(c *gin.Context) {
 	if !ok {
 		return
 	}
-	order, err := u.uc.AddNew(c, userID, number)
+	err = u.uc.AddNew(c, userID, number)
 	if err == nil {
-		resp := respOrder{
-			Number:     order.Number,
-			Status:     order.Status,
-			Accrual:    order.Accrual,
-			UploadedAt: order.UploadedAt.Format(time.RFC3339),
-		}
-		c.JSON(http.StatusAccepted, resp)
+		c.Status(http.StatusAccepted)
 		return
 	}
 	logger.Error().Err(err).Msg("http - OrderRoutes - OrderAdd - u.uc.AddNew")
@@ -99,7 +85,13 @@ func (u *OrderRoutes) OrderAdd(c *gin.Context) {
 	errorResponse(c, err, errCode)
 }
 
-type respOrderList []respOrder
+type respOrder struct {
+	UserID     entity.UserID      `json:"-"`
+	Number     entity.OrderNumber `json:"number"`
+	Status     entity.OrderStatus `json:"status"`
+	Accrual    entity.BonusAmount `json:"accrual,omitempty"`
+	UploadedAt string             `json:"uploaded_at,omitempty"`
+}
 
 // GetOrders godoc
 // @Summary      Get user orders
@@ -107,8 +99,8 @@ type respOrderList []respOrder
 // @Tags         order
 // @Accept       text/plain
 // @Produce      json
-// @Success      200 {object} respOrderList
-// @Success      204   {object} respOrderList
+// @Success      200 {object} []respOrder
+// @Success      204   {object} []respOrder
 // @Failure      401  "No Content"
 // @Failure      500  {object}  response
 // @Router       /orders [get]
@@ -129,7 +121,7 @@ func (u *OrderRoutes) GetOrders(c *gin.Context) {
 		c.Status(http.StatusNoContent)
 		return
 	}
-	res := make(respOrderList, 0, len(orders))
+	res := make([]respOrder, 0, len(orders))
 	for _, order := range orders {
 		res = append(res, respOrder{
 			Number:     order.Number,
@@ -177,7 +169,7 @@ func (u *OrderRoutes) AddForBonuses(c *gin.Context) {
 		return
 	}
 
-	_, err = u.uc.AddForBonuses(c, userID, req.Order, req.Amount)
+	err = u.uc.AddForBonuses(c, userID, req.Order, req.Amount)
 	if err != nil {
 		logger.Error().Err(err).Msg("http - OrderRoutes - AddForBonus - u.uc.Withdraw")
 		errCode := http.StatusInternalServerError
