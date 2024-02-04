@@ -18,8 +18,7 @@ func NewAuth(pg *postgres.Postgres) *AuthRepo {
 }
 
 func (ar *AuthRepo) LoginAvailable(ctx context.Context, login entity.UserLogin) (loginAvail bool, err error) {
-	query := `select not exists (select 1 from usr where login = @login) login_available;`
-	err = ar.Pool(ctx).QueryRow(ctx, query, pgx.NamedArgs{
+	err = ar.Pool(ctx).QueryRow(ctx, `select not exists (select 1 from usr where login = @login)`, pgx.NamedArgs{
 		"login": login,
 	}).Scan(&loginAvail)
 	if err != nil {
